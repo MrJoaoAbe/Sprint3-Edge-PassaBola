@@ -58,10 +58,10 @@ void loop() {
   DateTime agora = rtc.now();
 
   // Mostrar no LCD
+  lcd.clear(); // limpa resíduos de dígitos anteriores
   lcd.setCursor(0, 0);
   lcd.print("BPM: ");
   lcd.print(BPM);
-  lcd.clear(); // limpa resíduos de dígitos anteriores
 
   // Criar JSON
   StaticJsonDocument<256> doc;
