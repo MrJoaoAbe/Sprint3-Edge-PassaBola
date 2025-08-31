@@ -62,21 +62,51 @@
 
             <div>
                 <p>Grafico</p>
+                <p>Batimentos: <span id="BPM">--</span> por Minuto</p>
+                <p>Data e Hora: <span id="timestamp">--</span></p>
             </div>
         </div>
     </section>
 
+    <script>
+        function atualizarDados() {
+            fetch('http://localhost:1880/dados') //Esse /dados é o que será alterado para o que for feito no NODE-RED
+                .then(response => response.json())   // Converte para JSON
+                .then(data => {
+                    console.log("JSON recebido:", data); // Mostra o JSON no console
+
+                    // Atualiza os elementos no HTML
+                    document.getElementById('BPM').textContent = data.BPM;
+                    document.getElementById('timestamp').textContent = data.timestamp;
+                })
+                .catch(e => {
+                    console.log("Falha ao buscar dados:", e);
+                });
+        }
+
+        // Atualiza ao carregar a página
+        atualizarDados();
+
+        // Atualiza a cada 5 segundos
+        setInterval(atualizarDados, 5000);
+    </script>
+
     <footer>
-        <div id="link">
-            <p>Links</p>
+        <div class="link">
+            <p class="TituloFooter">Links</p>
             <a href="#">Passa a Bola</a>
             <a href="#">Incrição</a>
             <a href="#">Copa</a>
             <a href="#">Monitorar Jogadoras</a>
         </div>
 
-        <div id="contato">
-            <p>Contatos</p>
+        <div class="info">
+            <p class="TituloFooter">Para mais notícias</p>
+            <input type="text" placeholder="Insira seu email">
+        </div>
+
+        <div class="contato">
+            <p class="TituloFooter">Contatos</p>
             <p>+55 (81) 9XXXX-XXXX</p>
             <p>Instagram | Youtube | Tiktok</p>
         </div>
