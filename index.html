@@ -62,9 +62,34 @@
 
             <div>
                 <p>Grafico</p>
+                <p>Batimentos: <span id="BPM">--</span> °C</p>
+                <p>DataHora: <span id="timestamp">--</span> %</p>
             </div>
         </div>
     </section>
+
+    <script>
+        function atualizarDados() {
+            fetch('http://localhost:1880/dados') //Esse /dados é o que será alterado para o que for feito no NODE-RED
+                .then(response => response.json())   // Converte para JSON
+                .then(data => {
+                    console.log("JSON recebido:", data); // Mostra o JSON no console
+
+                    // Atualiza os elementos no HTML
+                    document.getElementById('BPM').textContent = data.BPM;
+                    document.getElementById('timestamp').textContent = data.timestamp;
+                })
+                .catch(e => {
+                    console.log("Falha ao buscar dados:", e);
+                });
+        }
+
+        // Atualiza ao carregar a página
+        atualizarDados();
+
+        // Atualiza a cada 5 segundos
+        setInterval(atualizarDados, 5000);
+    </script>
 
     <footer>
         <div id="link">

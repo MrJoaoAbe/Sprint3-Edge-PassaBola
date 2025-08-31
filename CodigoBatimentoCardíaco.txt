@@ -1,0 +1,99 @@
+#include <PulseSensorPlayground.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <RTClib.h>
+
+#define pulsePin A0 // Pino de sinal do sensor
+int ledVerde = 10;
+int ledVermelha = 9;
+int buzzer = 11;
+
+// Objeto PulseSensor
+PulseSensorPlayground pulseSensor;
+
+// Variáveis BPM
+int BPM = 0;
+int LimitarBpm = 150;
+
+// LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Relógio
+RTC_DS3231 rtc;
+
+void setup() {
+  pinMode(ledVerde, OUTPUT);
+  pinMode(ledVermelha, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+
+  Serial.begin(9600);
+
+  pulseSensor.analogInput(pulsePin);
+  pulseSensor.setThreshold(550); // Ajuste se necessário
+  pulseSensor.begin();
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Monitor Cardio");
+  delay(2000);
+  lcd.clear();
+
+  if (!rtc.begin()) {
+    Serial.println("Erro ao iniciar RTC!");
+    while (1);
+  }
+
+  // Ajusta hora do RTC na primeira vez (comente depois de setar!)
+  // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+}
+
+void loop() {
+  // Detectar Pulsação
+  BPM = pulseSensor.getBeatsPerMinute();
+  bool pulsoDetectado = pulseSensor.sawStartOfBeat();
+
+  // Obter Hora
+  DateTime agora = rtc.now();
+
+  // Mostrar no LCD
+  lcd.setCursor(0, 0);
+  lcd.print("BPM: ");
+  lcd.print(BPM);
+  lcd.clear(); // limpa resíduos de dígitos anteriores
+
+  // Criar JSON
+  StaticJsonDocument<256> doc;
+  doc["BPM"] = BPM;
+  doc["timestamp"] = agora.timestamp(DateTime::TIMESTAMP_FULL);
+
+  String output;
+  serializeJson(doc, output);
+  Serial.println(output); // Enviar para o NODE-RED
+
+  if (pulsoDetectado) {
+    if (BPM > 0 && BPM < LimitarBpm) {
+      digitalWrite(ledVerde, HIGH);
+      digitalWrite(ledVermelha, LOW);
+      noTone(buzzer);
+
+      lcd.setCursor(0, 1);
+      lcd.print("Status: Normal   ");
+
+      Serial.println("Batidas controladas");
+    }
+    else if (BPM >= LimitarBpm) {
+      digitalWrite(ledVerde, LOW);
+      digitalWrite(ledVermelha, HIGH);
+      tone(buzzer, 400);
+
+      lcd.setCursor(0, 1);
+      lcd.print("Status: ALERTA!! ");
+
+      Serial.println("Batidas acima do esperado!");
+    }
+  }
+
+  delay(800);
+}
