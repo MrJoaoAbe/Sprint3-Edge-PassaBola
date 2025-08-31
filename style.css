@@ -100,8 +100,29 @@ nav a:hover {
 }
 
 footer {
+    display: flex;
     padding: 50px;
     padding-left: 20px;
     background-color: black;
     color: white;
+    align-items: center;
+    justify-content: center;
+    gap: 500px;
+}
+
+#link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+}
+
+#link a{
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+}
+
+#contato p{
+    margin: 10px;
 }
