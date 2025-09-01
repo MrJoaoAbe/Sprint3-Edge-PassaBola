@@ -70,7 +70,7 @@
 
     <script>
         function atualizarDados() {
-            fetch('http://localhost:1880/dados') //Esse /dados é o que será alterado para o que for feito no NODE-RED
+            fetch('http://localhost:1880/bpm') //Esse /dados é o que será alterado para o que for feito no NODE-RED
                 .then(response => response.json())   // Converte para JSON
                 .then(data => {
                     console.log("JSON recebido:", data); // Mostra o JSON no console
