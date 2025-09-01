@@ -56,40 +56,86 @@
         </div>
     </section>
 
-    <section>
-        <div id="grafico">
-            <h1>Monitorar Batimentos Cardiacos</h1>
+   <section>
+  <div id="grafico">
+    <h1>Monitorar Batimentos Cardiacos</h1>
 
-            <div>
-                <p>Grafico</p>
-                <p>Batimentos: <span id="BPM">--</span> por Minuto</p>
-                <p>Data e Hora: <span id="timestamp">--</span></p>
-            </div>
-        </div>
-    </section>
+    <canvas id="chartBPM" width="600" height="300"></canvas>
 
-    <script>
-        function atualizarDados() {
-            fetch('http://localhost:1880/dados') //Esse /dados é o que será alterado para o que for feito no NODE-RED
-                .then(response => response.json())   // Converte para JSON
-                .then(data => {
-                    console.log("JSON recebido:", data); // Mostra o JSON no console
+    <div>
+      <p>Batimentos: <span id="BPM">--</span> por Minuto</p>
+      <p>Data e Hora: <span id="timestamp">--</span></p>
+    </div>
+  </div>
+</section>
 
-                    // Atualiza os elementos no HTML
-                    document.getElementById('BPM').textContent = data.BPM;
-                    document.getElementById('timestamp').textContent = data.timestamp;
-                })
-                .catch(e => {
-                    console.log("Falha ao buscar dados:", e);
-                });
+<!-- Importando o Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Configuração inicial do gráfico
+  const ctx = document.getElementById('chartBPM').getContext('2d');
+  const chartBPM = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [], // timestamps
+      datasets: [{
+        label: 'Batimentos por Minuto (BPM)',
+        data: [], // valores BPM
+        borderColor: 'red',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderWidth: 2,
+        tension: 0.2 // curva mais suave
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          title: { display: true, text: 'Tempo' }
+        },
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'BPM' }
+        }
+      }
+    }
+  });
+
+  // Função para buscar os dados
+  function atualizarDados() {
+    fetch('http://localhost:1880/bpm')
+      .then(response => response.json())
+      .then(data => {
+        console.log("JSON recebido:", data);
+
+        // Atualiza os elementos no HTML
+        document.getElementById('BPM').textContent = data.BPM;
+        document.getElementById('timestamp').textContent = data.timestamp;
+
+        // Adiciona novos dados ao gráfico
+        chartBPM.data.labels.push(data.timestamp); 
+        chartBPM.data.datasets[0].data.push(data.BPM);
+
+        // Mantém apenas os últimos 20 pontos (evitar gráfico infinito)
+        if (chartBPM.data.labels.length > 20) {
+          chartBPM.data.labels.shift();
+          chartBPM.data.datasets[0].data.shift();
         }
 
-        // Atualiza ao carregar a página
-        atualizarDados();
+        chartBPM.update();
+      })
+      .catch(e => {
+        console.log("Falha ao buscar dados:", e);
+      });
+  }
 
-        // Atualiza a cada 5 segundos
-        setInterval(atualizarDados, 5000);
-    </script>
+  // Atualiza a cada 5 segundos
+  setInterval(atualizarDados, 5000);
+
+  // Chamada inicial
+  atualizarDados();
+</script>
 
     <footer>
         <div class="footer-container">
