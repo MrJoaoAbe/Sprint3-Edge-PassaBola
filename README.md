@@ -26,7 +26,6 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - LED Vermelho (pino 9) → indica alerta
 - Buzzer piezoelétrico (pino 11) → emite alarme sonoro
 - Resistores (220Ω) para os LEDs
-- Display LCD 16x2 com módulo I2C (endereço 0x27 no código)
 - Módulo I2C para LCD (PCF8574) → facilita a conexão com SDA/SCL
 - Módulo RTC DS3231 (com bateria CR2032 para manter hora mesmo desligado)
 - Protoboard
@@ -37,7 +36,6 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - PulseSensorPlayground.h → leitura do sensor de batimentos
 - ArduinoJson.h → criação de JSON para envio ao Node-RED
 - Wire.h → comunicação I2C
-- LiquidCrystal_I2C.h → controle do display LCD via I2C
 - RTClib.h → leitura do relógio de tempo real DS3231
 
 ### Como montar o projeto? 
@@ -61,19 +59,7 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 - Pino negativo (–) → GND
 
-4. **Display LCD 16x2 com módulo I2C**
-
-- O módulo I2C reduz as conexões para só 4 fios:
-
-- GND → GND do Arduino
-
-- VCC → 5V do Arduino
-
-- SDA → A4 (Arduino UNO)
-
-- SCL → A5 (Arduino UNO)
-
-5. **RTC DS3231**
+4. **RTC DS3231**
 
 - Conecta também via I2C (pode compartilhar os pinos com o LCD):
 
@@ -95,8 +81,6 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 - Ligue o buzzer ao pino 11 e GND.
 
-- Conecte o LCD I2C aos pinos SDA (A4) e SCL (A5).
-
 - Conecte o RTC DS3231 também aos mesmos pinos SDA e SCL.
 
 - Alimente tudo com o cabo USB no Arduino.
@@ -109,15 +93,11 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 - ArduinoJson
 
-- LiquidCrystal_I2C
-
 - RTClib
 
 **Carregue o código**
 
 - Abra o Serial Monitor para verificar os JSONs enviados para o Node-RED.
-
-- Confira o display LCD: ele deve mostrar BPM e Status.
 
 ### Integrantes do Grupo
 - Eduardo Santiago Bassan — RM: 561474
@@ -131,7 +111,6 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 #include <PulseSensorPlayground.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 #include <RTClib.h>
 
 #define pulsePin A0 // Pino de sinal do sensor
@@ -144,13 +123,11 @@ PulseSensorPlayground pulseSensor;
 
 // Variáveis BPM
 int BPM = 0;
+int ultimoBPM = 0;
 int LimitarBpm = 150;
 
-// LCD
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
 // Relógio
-RTC_DS3231 rtc;
+RTC_DS1307 rtc;
 
 void setup() {
   pinMode(ledVerde, OUTPUT);
@@ -160,15 +137,8 @@ void setup() {
   Serial.begin(9600);
 
   pulseSensor.analogInput(pulsePin);
-  pulseSensor.setThreshold(550); // Ajuste se necessário
+  pulseSensor.setThreshold(513); // Ajuste conforme necessário
   pulseSensor.begin();
-
-  lcd.init();
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Monitor Cardio");
-  delay(2000);
-  lcd.clear();
 
   if (!rtc.begin()) {
     Serial.println("Erro ao iniciar RTC!");
@@ -184,49 +154,51 @@ void loop() {
   BPM = pulseSensor.getBeatsPerMinute();
   bool pulsoDetectado = pulseSensor.sawStartOfBeat();
 
+  // Atualiza último BPM válido
+  if (pulsoDetectado && BPM > 0) {
+    ultimoBPM = BPM;
+  }
+
   // Obter Hora
   DateTime agora = rtc.now();
 
-  // Mostrar no LCD
-  lcd.clear(); // limpa resíduos de dígitos anteriores
-  lcd.setCursor(0, 0);
-  lcd.print("BPM: ");
-  lcd.print(BPM);
-
   // Criar JSON
   StaticJsonDocument<256> doc;
-  doc["BPM"] = BPM;
-  doc["timestamp"] = agora.timestamp(DateTime::TIMESTAMP_FULL);
+  doc["BPM"] = ultimoBPM;
+
+  // Formatando o Timestamp
+  char timestamp[16];
+  sprintf(timestamp, "%04d%02d%02d%02d%02d",
+          agora.year(),
+          agora.month(),
+          agora.day(),
+          agora.hour(),
+          agora.minute());
+
+  doc["timestamp"] = timestamp;
 
   String output;
   serializeJson(doc, output);
   Serial.println(output); // Enviar para o NODE-RED
 
-  if (pulsoDetectado) {
-    if (BPM > 0 && BPM < LimitarBpm) {
+  // Controle de LEDs e buzzer
+  if (pulsoDetectado && ultimoBPM > 0) {
+    if (ultimoBPM < LimitarBpm) {
       digitalWrite(ledVerde, HIGH);
       digitalWrite(ledVermelha, LOW);
       noTone(buzzer);
-
-      lcd.setCursor(0, 1);
-      lcd.print("Status: Normal   ");
-
       Serial.println("Batidas controladas");
-    }
-    else if (BPM >= LimitarBpm) {
+    } else {
       digitalWrite(ledVerde, LOW);
       digitalWrite(ledVermelha, HIGH);
       tone(buzzer, 400);
-
-      lcd.setCursor(0, 1);
-      lcd.print("Status: ALERTA!! ");
-
       Serial.println("Batidas acima do esperado!");
     }
   }
 
-  delay(800);
+  delay(100); // Loop rápido para leituras mais constantes
 }
+
 ``` 
 ### Código HTML / JS – Gráfico Cardíaco
 
