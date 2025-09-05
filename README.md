@@ -21,7 +21,7 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 ## 🎥 Link para Vídeo
 
-> ([Link do vídeo no youtube](((https://youtu.be/DaaeMRpnFRI?si=da0R8Zpry1-qpj2i)))
+> ([[Link do vídeo no youtube](https://youtu.be/DaaeMRpnFRI?si=da0R8Zpry1-qpj2i)](((https://youtu.be/DaaeMRpnFRI?si=da0R8Zpry1-qpj2i)))
 
 ---
 
