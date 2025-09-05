@@ -19,6 +19,12 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - Node-RED
 - GitHub
 
+## 🎥 Link para Vídeo
+
+> ([Link do vídeo no youtube](((https://youtu.be/DaaeMRpnFRI?si=da0R8Zpry1-qpj2i)))
+
+---
+
 ### Materiais Utilizados
 - Arduino UNO 
 - Sensor de Pulso (Pulse Sensor) → conectado ao pino A0
