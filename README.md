@@ -9,7 +9,7 @@ Medir os batimentos por minuto (BPM) do coração é fundamental para atletas, p
 O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta enviando os dados para uma **página WEB**, facilitando a medição através de um **gráfico de linhas**. Além disto possui um sensor de excesso de BPM, se ultrapassar este limite ativa uma **led Vermelha** e um **sensor sonoro**. Se o BPM estiver controlado apenas a **led Verde** ficará acesa.
 
 ### Testes 
-- O projeto foi testado uma parte no Tinkercad
+- O projeto foi testado uma parte no Wokwi
 - Mas foi projetado em um arduino de forma presencial
 
 ### Tecnologias Utilizadas
