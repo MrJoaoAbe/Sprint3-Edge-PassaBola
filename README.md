@@ -45,7 +45,7 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 ### PuTTY
 - Dentro do PUTTY insira o **IP** e a **CHAVE**
 ![Exemplo de como deve ser preenchido o IP](/puTTY%20inicial.png "Exemplo de como deve ser preenchido o IP")
-![Exemplo de como deve ser preenchido a chave](/puTTY%20chave.png.png "Exemplo de como deve ser preenchido a Chave")
+![Exemplo de como deve ser preenchido a chave](/puTTY%20chave.png "Exemplo de como deve ser preenchido a Chave")
 - Após isso clique em OPEN e siga os seguintes passos para iniciar o BROCKER
   - sudo apt update 
   - sudo apt-get install net-tools 
