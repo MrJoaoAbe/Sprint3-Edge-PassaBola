@@ -1,4 +1,4 @@
-# Sprint3-Edge-PassaBola
+# Sprint4-Edge-PassaBola
 
 ## Sistema de monitoramento de batimentos cardíacos para atletas
 
