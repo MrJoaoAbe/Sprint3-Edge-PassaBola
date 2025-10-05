@@ -25,7 +25,7 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 ---
 
 ### Materiais Utilizados
-- Arduino UNO 
+- ESP32
 - Sensor de Pulso (Pulse Sensor) → conectado ao pino A0
 - LED Verde (pino 10) → indica estado normal
 - LED Vermelho (pino 9) → indica alerta
