@@ -10,7 +10,7 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 ### Testes 
 - O projeto foi testado uma parte no Wokwi
-- Mas foi projetado em um arduino de forma presencial
+- Foi projetado em um esp32 de forma presencial
 
 ### Tecnologias Utilizadas
 - Arduino IDE
@@ -45,6 +45,8 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - ArduinoJson.h → criação de JSON para envio ao Node-RED
 - Wire.h → comunicação I2C
 - RTClib.h → leitura do relógio de tempo real DS3231
+- WiFi.h → Para conectar à rede
+- PubSubClient.h → Para conectar ao servidor
 
 ### Como montar o projeto? 
 1. **Sensor de Pulso**
