@@ -27,6 +27,74 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 > ([[Link do vídeo no youtube](https://youtu.be/DaaeMRpnFRI?si=da0R8Zpry1-qpj2i)]
 ---
 
+## Como iniciar um servidor AWS - EC2
+
+### Site AWS - EC2
+- Entre no link - https://aws.amazon.com/pt/ec2/,
+- Inicie uma instancia ,
+- Dê um nome à maquina virtual,
+- Selecione Ubuntu como imagem,
+- E o tipo t3 como instancia,
+- Crie uma par de chaves no formato **PPK**,
+- E indique o quanto de memória é necessário na MV.
+- Em seguida vá em editar regras de entrada e configure as seguintes portas:
+**1883, 1026, 4041, 8666, 27017 e o ICMP para IPV4**
+![Portas a serem liberadas](/PORTAS_A_SEREM_LIBERADAS_EC2.png "Portas a serem liberadas")
+- **SALVE O IP**
+
+### PuTTY
+- Dentro do PUTTY insira o **IP** e a **CHAVE**
+![Exemplo de como deve ser preenchido o IP](/puTTY%20inicial.png "Exemplo de como deve ser preenchido o IP")
+![Exemplo de como deve ser preenchido a chave](/puTTY%20chave.png.png "Exemplo de como deve ser preenchido a Chave")
+- Após isso clique em OPEN e siga os seguintes passos para iniciar o BROCKER
+  - sudo apt update 
+  - sudo apt-get install net-tools 
+  - ifconfig 
+  - sudo apt install git
+  - sudo apt update
+  - sudo apt install apt-transport-https ca-certificates curl software-properties-common
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+  - sudo apt update
+  - apt-cache policy docker-ce
+  - sudo apt install docker-ce
+  - sudo systemctl status docker
+  - git clone https://github.com/fabiocabrini/fiware
+  - cd fiware
+  - sudo docker compose up -d 
+  - sudo docker stats 
+
+### Postman
+- Baixe este arquivo JSON → https://github.com/fabiocabrini/fiware/blob/main/FIWARE%20Descomplicado.postman_collection.json 
+- Abra o arquivo JSON dentro do **POSTMAN**
+- Substitua o placeholder **URL** pelo **IP** do servidor
+- Faça isso para os três arquivos **(GET)** presentes no **POSTMAN**
+![Exemplo HEALTHCHECK](/POSTMAN.png "Exemplo de Healthcheck")
+
+### NODE-RED
+![NODERED](/NODERED.png "NodeRED")
+- BLOCO 1 / MQTT IN
+  - Servidor = IP:1883
+  - Tópico = /TEF/device001/attrs/p
+- BLOCO 2 / JSON
+- BLOCO 3 / WRITE FILE
+  - Caminho = bpm.txt
+  - Ação = Sobrescrever Arquivo
+- BLOCO 4 / CHANGE
+  - NOME = BPM
+  - msg.payload
+  - msg.payload.BPM
+- BLOCO 5 / CHANGE
+  - NOME = timestamp
+  - msg.payload
+  - msg.payload.timestamp
+- BLOCO 6 / HTTP IN
+  - Método = GET
+  - URL = /bpm
+- BLOCO 7 / READ FILE
+  - bpm.txt
+- BLOCO 8 / HTTP RESPONSE
+
 ### Materiais Utilizados
 - ESP32
 - Sensor de Pulso (Pulse Sensor) → conectado ao pino A0
@@ -34,7 +102,6 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - LED Vermelho (pino 9) → indica alerta
 - Buzzer piezoelétrico (pino 11) → emite alarme sonoro
 - Resistores (220Ω) para os LEDs
-- Módulo I2C para LCD (PCF8574) → facilita a conexão com SDA/SCL
 - Módulo RTC DS3231 (com bateria CR2032 para manter hora mesmo desligado)
 - Protoboard
 - Jumpers (macho-macho / macho-fêmea)
@@ -105,6 +172,33 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 - RTClib
 
+- Placa -> DOIT ESP32 DEVKIT V1
+`
+**Configure o código para conectar no servidor**
+````cpp
+const char* default_SSID = "Wokwi-GUEST"; // Nome da rede Wi-Fi
+const char* default_PASSWORD = ""; // Senha da rede Wi-Fi
+const char* default_BROKER_MQTT = "3.144.236.56"; // IP do Broker MQTT
+const int default_BROKER_PORT = 1883; // Porta do Broker MQTT
+const char* default_TOPICO_SUBSCRIBE = "/TEF/device001/cmd"; // Tópico MQTT de escuta
+const char* default_TOPICO_PUBLISH_1 = "/TEF/device001/attrs"; // Tópico MQTT de envio de informações para Broker
+const char* default_TOPICO_PUBLISH_2 = "/TEF/device001/attrs/p"; // Tópico MQTT de envio de informações para Broker
+const char* default_ID_MQTT = "fiware_001"; // ID MQTT
+const int default_D4 = 2; // Pino do LED onboard
+// Declaração da variável para o prefixo do tópico
+const char* topicPrefix = "device001";
+
+// Variáveis para configurações editáveis
+char* SSID = const_cast<char*>(default_SSID);
+char* PASSWORD = const_cast<char*>(default_PASSWORD);
+char* BROKER_MQTT = const_cast<char*>(default_BROKER_MQTT);
+int BROKER_PORT = default_BROKER_PORT;
+char* TOPICO_SUBSCRIBE = const_cast<char*>(default_TOPICO_SUBSCRIBE);
+char* TOPICO_PUBLISH_1 = const_cast<char*>(default_TOPICO_PUBLISH_1);
+char* TOPICO_PUBLISH_2 = const_cast<char*>(default_TOPICO_PUBLISH_2);
+char* ID_MQTT = const_cast<char*>(default_ID_MQTT);
+````
+
 **Carregue o código**
 
 - Abra o Serial Monitor para verificar os JSONs enviados para o Node-RED.
@@ -115,7 +209,199 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - Henry Andrade Browne — RM: 562622
 - João Victor de Souza Abe — RM: 561446
 
-### Código Arduino – Monitor Cardíaco
+### Código ESP32 / Versão FINAL – Monitor Cardíaco
+
+```cpp
+#include <ArduinoJson.h> 
+#include <RTClib.h>
+#include <Wire.h>
+//Server
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// Bibliotecas para conectar ao servidor
+const char* default_SSID = "Wokwi-GUEST"; // Nome da rede Wi-Fi
+const char* default_PASSWORD = ""; // Senha da rede Wi-Fi
+const char* default_BROKER_MQTT = "3.144.236.56"; // IP do Broker MQTT
+const int default_BROKER_PORT = 1883; // Porta do Broker MQTT
+const char* default_TOPICO_SUBSCRIBE = "/TEF/device001/cmd"; // Tópico MQTT de escuta
+const char* default_TOPICO_PUBLISH_1 = "/TEF/device001/attrs"; // Tópico MQTT de envio de informações para Broker
+const char* default_TOPICO_PUBLISH_2 = "/TEF/device001/attrs/p"; // Tópico MQTT de envio de informações para Broker
+const char* default_ID_MQTT = "fiware_001"; // ID MQTT
+const int default_D4 = 2; // Pino do LED onboard
+// Declaração da variável para o prefixo do tópico
+const char* topicPrefix = "device001";
+
+// Variáveis para configurações editáveis
+char* SSID = const_cast<char*>(default_SSID);
+char* PASSWORD = const_cast<char*>(default_PASSWORD);
+char* BROKER_MQTT = const_cast<char*>(default_BROKER_MQTT);
+int BROKER_PORT = default_BROKER_PORT;
+char* TOPICO_SUBSCRIBE = const_cast<char*>(default_TOPICO_SUBSCRIBE);
+char* TOPICO_PUBLISH_1 = const_cast<char*>(default_TOPICO_PUBLISH_1);
+char* TOPICO_PUBLISH_2 = const_cast<char*>(default_TOPICO_PUBLISH_2);
+char* ID_MQTT = const_cast<char*>(default_ID_MQTT);
+int D4 = default_D4;
+
+WiFiClient espClient;
+PubSubClient MQTT(espClient);
+char EstadoSaida = '0';
+
+int LED_VERMELHA = 4;
+int LED_VERDE = 16;
+int SENSOR_CARDIACO_POT = 34;
+int buzzer = 14; 
+
+int VALOR_BRUTO_SENSOR = 0;
+int VALOR_CONVERTIDO_BPM = 0;
+
+// Relógio
+RTC_DS1307 rtc;
+
+void initSerial() {
+  Serial.begin(9600);
+}
+
+void reconectWiFi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+  WiFi.begin(SSID, PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println("\nConectado ao Wi-Fi. IP: " + WiFi.localIP().toString());
+  digitalWrite(D4, LOW);
+}
+
+void initWiFi() {
+  delay(10);
+  Serial.println("------Conexao WI-FI------");
+  reconectWiFi();
+}
+
+void initMQTT() {
+  MQTT.setServer(BROKER_MQTT, BROKER_PORT);
+  MQTT.setCallback(mqtt_callback);
+}
+
+void mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  String msg;
+  for (int i = 0; i < length; i++) msg += (char)payload[i];
+  Serial.println("Mensagem recebida: " + msg);
+
+  if (msg.equals(String(topicPrefix) + "@on|")) {
+    digitalWrite(D4, HIGH);
+    EstadoSaida = '1';
+  }
+  if (msg.equals(String(topicPrefix) + "@off|")) {
+    digitalWrite(D4, LOW);
+    EstadoSaida = '0';
+  }
+}
+
+
+void reconnectMQTT() {
+  while (!MQTT.connected()) {
+    Serial.print("Tentando conectar ao broker...");
+    if (MQTT.connect(ID_MQTT)) {
+      Serial.println("Conectado!");
+      MQTT.subscribe(TOPICO_SUBSCRIBE);
+    } else {
+      Serial.println("Falha. Tentando em 2s.");
+      delay(2000);
+    }
+  }
+}
+
+void VerificaConexoesWiFIEMQTT() {
+  if (!MQTT.connected()) reconnectMQTT();
+  reconectWiFi();
+}
+
+void setup() {
+  initSerial();
+
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_VERMELHA, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(SENSOR_CARDIACO_POT, INPUT);
+
+  initWiFi();
+  initMQTT();
+
+  if (!rtc.begin()) {
+    Serial.println("Erro ao iniciar RTC!");
+    while (1);
+  }
+
+  // Ajusta hora do RTC na primeira vez (comente depois de setar!)
+  // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+}
+
+void loop() {
+  VerificaConexoesWiFIEMQTT();
+  MQTT.loop();
+
+  // Simula a leitura do batimento cardíaco
+  VALOR_BRUTO_SENSOR = analogRead(SENSOR_CARDIACO_POT);
+  VALOR_CONVERTIDO_BPM = map(VALOR_BRUTO_SENSOR, 0, 4095, 0, 220); //Batimento por minuto
+
+  // Obter Hora
+  DateTime agora = rtc.now();
+
+  //Criar JSON
+  StaticJsonDocument<256> doc;
+  doc["BPM"] = VALOR_CONVERTIDO_BPM;
+
+  // Formatando o Timestamp
+  char timestamp[16];
+  sprintf(timestamp, "%04d%02d%02d%02d%02d",
+          agora.year(),
+          agora.month(),
+          agora.day(),
+          agora.hour(),
+          agora.minute());
+
+  doc["timestamp"] = timestamp;
+
+char buffer[256];
+serializeJson(doc, buffer);
+Serial.println(buffer); // Enviar para o NODE-RED
+
+// Mensagem de Saída
+//String mensagem = "BPM: " + String(VALOR_CONVERTIDO_BPM) + " medido as " + String(timestamp);
+
+// Publica no broker
+MQTT.publish(TOPICO_PUBLISH_2, buffer);
+Serial.print("Enviado: ");
+Serial.println(buffer);
+
+
+  // Controle de LEDs e buzzer
+if (VALOR_CONVERTIDO_BPM > 0) {
+  if (VALOR_CONVERTIDO_BPM < 110) {
+    digitalWrite(LED_VERDE, HIGH);
+    digitalWrite(LED_VERMELHA, LOW);
+    noTone(buzzer);
+    delay(1000);
+    Serial.println("Batidas controladas");
+  //  Serial.println(mensagem);
+  } else {
+    digitalWrite(LED_VERDE, LOW);
+    digitalWrite(LED_VERMELHA, HIGH);
+    tone(buzzer, 400);
+    delay(1000);
+    Serial.println("Batidas acima do esperado!");
+  //  Serial.println(mensagem);
+  }
+}
+
+  delay(1000); // Loop rápido para leituras mais constantes
+}
+
+```
+
+### Código Arduino / Primeira versão – Monitor Cardíaco
 
 ```cpp
 #include <PulseSensorPlayground.h>
