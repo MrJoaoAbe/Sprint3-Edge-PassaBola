@@ -14,7 +14,10 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 ### Tecnologias Utilizadas
 - Arduino IDE
+- Postman
+- Javascript
 - Tinkercad
+- Wokwi
 - Visual Studio Code
 - Node-RED
 - GitHub
