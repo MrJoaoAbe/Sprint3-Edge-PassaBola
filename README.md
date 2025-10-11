@@ -39,13 +39,18 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - E indique o quanto de memória é necessário na MV.
 - Em seguida vá em editar regras de entrada e configure as seguintes portas:
 **1883, 1026, 4041, 8666, 27017 e o ICMP para IPV4**
-![Portas a serem liberadas](/PORTAS_A_SEREM_LIBERADAS_EC2.png "Portas a serem liberadas")
+  
+![Portas a serem liberadas](/PORTAS_A_SEREM_LIBERADAS_EC2.png "Portas a serem liberadas")  
+
 - **SALVE O IP**
 
 ### PuTTY
 - Dentro do PUTTY insira o **IP** e a **CHAVE**
-![Exemplo de como deve ser preenchido o IP](/puTTY%20inicial.png "Exemplo de como deve ser preenchido o IP")
-![Exemplo de como deve ser preenchido a chave](/puTTY%20chave.png "Exemplo de como deve ser preenchido a Chave")
+  
+![Exemplo de como deve ser preenchido o IP](/puTTY%20inicial.png "Exemplo de como deve ser preenchido o IP")  
+
+![Exemplo de como deve ser preenchido a chave](/puTTY%20chave.png "Exemplo de como deve ser preenchido a Chave")  
+
 - Após isso clique em OPEN e siga os seguintes passos para iniciar o BROCKER
   - sudo apt update 
   - sudo apt-get install net-tools 
@@ -69,10 +74,13 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - Abra o arquivo JSON dentro do **POSTMAN**
 - Substitua o placeholder **URL** pelo **IP** do servidor
 - Faça isso para os três arquivos **(GET)** presentes no **POSTMAN**
-![Exemplo HEALTHCHECK](/POSTMAN.png "Exemplo de Healthcheck")
+  
+![Exemplo HEALTHCHECK](/POSTMAN.png "Exemplo de Healthcheck")  
+
 
 ### NODE-RED
-![NODERED](/NODERED.png "NodeRED")
+![NODERED](/NODERED.png "NodeRED")  
+
 - BLOCO 1 / MQTT IN
   - Servidor = IP:1883
   - Tópico = /TEF/device001/attrs/p
