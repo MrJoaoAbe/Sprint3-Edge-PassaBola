@@ -123,6 +123,11 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 - WiFi.h → Para conectar à rede
 - PubSubClient.h → Para conectar ao servidor
 
+### Link para a simulação no Wokwi
+
+> [[Link Wokwi](https://wokwi.com/projects/443443684035177473)]
+---
+
 ### Como montar o projeto? 
 1. **Sensor de Pulso**
 
