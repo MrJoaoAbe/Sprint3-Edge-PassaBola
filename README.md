@@ -24,7 +24,7 @@ O trabalho consiste em criar um dispositivo que **monitora o BPM** de uma atleta
 
 ## 🎥 Link para Vídeo
 
-> ([[Link do vídeo no youtube](https://youtu.be/DaaeMRpnFRI?si=da0R8Zpry1-qpj2i)]
+> ([[Link do vídeo no youtube](https://youtu.be/CJ_5aVkh3w4?si=xu6tOKOCxlA7QFA4)
 ---
 
 ## Como iniciar um servidor AWS - EC2
